@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Give Review</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+
+<div class="bg-white p-8 rounded-xl shadow-lg w-96">
+
+    <h2 class="text-xl font-bold mb-4 text-center">
+        Review for {{ booking.car.name }}
+    </h2>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <!-- Rating -->
+        <label class="block mb-2">Rating (1-5)</label>
+        <select name="rating" class="w-full border px-3 py-2 rounded mb-4">
+            <option value="5">⭐⭐⭐⭐⭐</option>
+            <option value="4">⭐⭐⭐⭐</option>
+            <option value="3">⭐⭐⭐</option>
+            <option value="2">⭐⭐</option>
+            <option value="1">⭐</option>
+        </select>
+
+        <!-- Review -->
+        <textarea name="review" placeholder="Write your review..."
+            class="w-full border px-3 py-2 rounded mb-4"></textarea>
+
+        <button class="w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700">
+            Submit Review
+        </button>
+
+    </form>
+
+</div>
+
+</body>
+</html>

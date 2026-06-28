@@ -1,0 +1,294 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Car | CarRentalPro</title>
+
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+
+<div class="w-full max-w-5xl bg-white shadow-2xl rounded-2xl overflow-hidden flex">
+
+    <!-- LEFT SIDE -->
+    <div class="w-1/2 bg-gray-50 p-6 flex flex-col items-center justify-center">
+
+        <h2 class="text-2xl font-bold mb-4">
+            {{ car.name }}
+        </h2>
+
+        <img src="{{ car.image.url }}" class="rounded-xl shadow mb-4" width="300">
+
+        <p class="text-green-600 font-semibold text-lg">
+            ₹{{ car.price }} / day
+        </p>
+
+        <p class="text-blue-600 font-semibold">
+            ₹{{ car.price_per_km }} / km
+        </p>
+
+        <p class="text-purple-600 font-semibold">
+            ₹{{ car.price_per_hour }} / hour
+        </p>
+
+    </div>
+
+    <!-- RIGHT SIDE -->
+    <div class="w-1/2 p-8">
+
+        <h2 class="text-2xl font-bold text-indigo-600 mb-6 text-center">
+            Booking Details
+        </h2>
+
+        <form method="POST" class="space-y-4">
+            {% csrf_token %}
+
+            <!-- PHONE -->
+            <input type="text" name="phone" placeholder="Phone Number"
+                class="w-full px-4 py-2 border rounded-lg" required>
+
+            <!-- LOCATIONS -->
+            <input type="text" name="pickup_location" placeholder="Pickup Location"
+                class="w-full px-4 py-2 border rounded-lg" required>
+
+            <input type="text" name="drop_location" placeholder="Drop Location"
+                class="w-full px-4 py-2 border rounded-lg" required>
+
+            <!-- DATE -->
+            <div>
+                <label class="text-sm">Start Date (For Day Booking)</label>
+                <input type="date" id="start_date" name="start_date"
+                    class="w-full px-4 py-2 border rounded-lg">
+            </div>
+
+            <div>
+                <label class="text-sm">End Date (For Day Booking)</label>
+                <input type="date" id="end_date" name="end_date"
+                    class="w-full px-4 py-2 border rounded-lg">
+            </div>
+
+            <!-- HOURS -->
+            <input type="number" id="hour" name="hours"
+                placeholder="Enter Hours (For Hour Booking)"
+                class="w-full px-4 py-2 border rounded-lg">
+
+            <!-- KM -->
+            <input type="number" id="km" name="distance_km"
+                placeholder="Enter Distance (KM)"
+                class="w-full px-4 py-2 border rounded-lg" required>
+
+            <!-- RESULT -->
+            <div class="bg-gray-100 p-4 rounded-lg">
+                <p>Days: <span id="days">0</span></p>
+                <p>Hours: <span id="hours">0</span></p>
+
+                <p>Day Cost: ₹<span id="day_price">0</span></p>
+                <p>Hour Cost: ₹<span id="hour_price">0</span></p>
+                <p>KM Cost: ₹<span id="km_price">0</span></p>
+
+                <hr class="my-2">
+
+                <p class="font-bold text-lg">
+                    Total: ₹<span id="total_price">0</span>
+                </p>
+            </div>
+
+            <!-- HIDDEN TOTAL -->
+            <input type="hidden" name="total_price" id="total_input">
+
+<button type="button"
+    onclick="openPayment()"
+    class="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700">
+    Confirm & Pay
+</button>
+            <button type="button"
+    onclick="openPayment()"
+    class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700">
+    Pay Now
+</button>
+
+        </form>
+
+    </div>
+
+</div>
+
+<!-- 🔥 SCRIPT -->
+<script>
+const pricePerDay = parseInt("{{ car.price|default:0 }}");
+const pricePerKm = parseInt("{{ car.price_per_km|default:0 }}");
+const pricePerHour = parseInt("{{ car.price_per_hour|default:0 }}");
+
+function calculate() {
+    const startVal = document.getElementById("start_date").value;
+    const endVal = document.getElementById("end_date").value;
+    const hourVal = document.getElementById("hour").value;
+    const kmVal = document.getElementById("km").value;
+
+    let days = 0;
+    let hours = parseInt(hourVal) || 0;
+    let km = parseInt(kmVal) || 0;
+
+    let dayPrice = 0;
+    let hourPrice = 0;
+
+    // PRIORITY
+    if (hours > 0) {
+        hourPrice = hours * pricePerHour;
+        days = 0;
+    } 
+    else if (startVal && endVal) {
+        let start = new Date(startVal);
+        let end = new Date(endVal);
+
+        days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+
+        if (days < 1) days = 0;
+
+        dayPrice = days * pricePerDay;
+        hours = 0;
+    }
+
+    let kmPrice = km * pricePerKm;
+    let total = dayPrice + hourPrice + kmPrice;
+
+    document.getElementById("days").innerText = days;
+    document.getElementById("hours").innerText = hours;
+
+    document.getElementById("day_price").innerText = dayPrice;
+    document.getElementById("hour_price").innerText = hourPrice;
+    document.getElementById("km_price").innerText = kmPrice;
+
+    document.getElementById("total_price").innerText = total;
+    document.getElementById("total_input").value = total;
+}
+
+// EVENTS
+document.getElementById("start_date").addEventListener("change", calculate);
+document.getElementById("end_date").addEventListener("change", calculate);
+document.getElementById("hour").addEventListener("input", calculate);
+document.getElementById("km").addEventListener("input", calculate);
+</script>
+
+<script>
+function openPayment() {
+    let total = document.getElementById("total_input").value;
+
+    if (!total || total == 0) {
+        alert("Please calculate total first!");
+        return;
+    }
+
+    document.getElementById("payAmount").innerText = total;
+    document.getElementById("paymentModal").classList.remove("hidden");
+}
+
+function closePayment() {
+    document.getElementById("paymentModal").classList.add("hidden");
+}
+
+function processPayment() {
+    alert("✅ Payment Successful!");
+
+    // Submit form automatically after payment
+    document.querySelector("form").submit();
+}
+</script>
+<script>
+// 🔥 AUTO KM LOGIC
+function autoKM() {
+    let pickup = document.querySelector("input[name='pickup_location']").value.toLowerCase();
+    let drop = document.querySelector("input[name='drop_location']").value.toLowerCase();
+
+    let km = 0;
+
+    // Maharashtra
+    if (pickup.includes("pune") && drop.includes("mumbai")) km = 150;
+    else if (pickup.includes("pune") && drop.includes("nagpur")) km = 720;
+    else if (pickup.includes("mumbai") && drop.includes("nagpur")) km = 800;
+
+    // Karnataka
+    else if (pickup.includes("bangalore") && drop.includes("mysore")) km = 150;
+    else if (pickup.includes("bangalore") && drop.includes("mangalore")) km = 350;
+
+    // Gujarat
+    else if (pickup.includes("ahmedabad") && drop.includes("surat")) km = 270;
+    else if (pickup.includes("surat") && drop.includes("vadodara")) km = 150;
+    
+    // 🔥 YOUR CUSTOM LOCATIONS
+    if (pickup.includes("vasmat road parbhani") && drop.includes("dargah road parbhani")) km = 25;
+
+    else if (pickup.includes("qadrabad plot parbhani") && drop.includes("vakil colony parbhani")) km = 10;
+
+    else if (pickup.includes("yeshwant college of IT parbhani") && drop.includes("dhar road parbhani")) km = 8;
+
+    // 🔁 reverse also works
+    else if (pickup.includes("dargah road parbhani") && drop.includes("vasmat road parbhani")) km = 25;
+
+    else if (pickup.includes("vakil colony parbhani") && drop.includes("qadrabad plot parbhani")) km = 10;
+
+    else if (pickup.includes("dhar road parbhani") && drop.includes("yeshwant college of IT parbhani")) km = 8;
+
+    // SAME LOCATION
+    else if (pickup === drop && pickup !== "") km = 5;
+
+    // DEFAULT
+    else km = 25;
+
+    document.getElementById("km").value = km;
+
+    calculate();
+}
+</script>
+<script>
+document.querySelector("input[name='pickup_location']").addEventListener("change", autoKM);
+document.querySelector("input[name='drop_location']").addEventListener("change", autoKM);
+</script>
+
+<!-- PAYMENT MODAL -->
+<div id="paymentModal" class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-center">
+
+    <div class="bg-white p-6 rounded-xl w-96 shadow-lg text-center">
+
+        <h2 class="text-xl font-bold mb-4 text-green-600">
+            Payment Gateway
+        </h2>
+
+        <p class="mb-4">Total Amount: ₹<span id="payAmount">0</span></p>
+
+        <input type="text" placeholder="Card Number"
+            class="w-full border px-3 py-2 mb-3 rounded">
+
+        <input type="text" placeholder="Expiry Date"
+            class="w-full border px-3 py-2 mb-3 rounded">
+
+        <input type="text" placeholder="CVV"
+            class="w-full border px-3 py-2 mb-3 rounded">
+
+        <button onclick="processPayment()"
+            class="bg-green-600 text-white px-4 py-2 rounded w-full hover:bg-green-700">
+            Pay & Confirm
+        </button>
+
+        <button onclick="closePayment()"
+            class="mt-3 text-gray-500 underline">
+            Cancel
+        </button>
+
+    </div>
+</div>
+</body>
+</html>

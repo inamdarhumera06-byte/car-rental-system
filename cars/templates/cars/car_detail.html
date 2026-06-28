@@ -1,0 +1,38 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ car.name }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+
+<div class="max-w-4xl mx-auto mt-10 bg-white shadow-lg rounded-lg p-6">
+
+    {% if car.image %}
+    <img src="{{ car.image.url }}" class="w-full h-80 object-cover rounded">
+    {% endif %}
+
+    <h1 class="text-3xl font-bold mt-4">{{ car.name }}</h1>
+    <p class="text-gray-600 mt-2">Model: {{ car.model }}</p>
+    <p class="text-gray-600 mt-2">City:{{ car.city }}</p>
+    <p class="text-gray-600 mt-2">State: {{ car.state }}</p>
+    <p class="text-gray-600 mt-2">Year: {{ car.year }}</p>
+    <p class="text-gray-600 mt-2">Price: ₹{{ car.price }}/day</p>
+    <p class="text-gray-600 mt-2">Price per km: ₹{{ car.price_per_km }}</p>
+    <p class="text-gray-600 mt-2">Price per hour: ₹{{ car.price_per_hour }}</p>
+    <p class="text-gray-600 mt-2">Fuel: {{ car.fuel }}</p>
+    <p class="text-gray-600 mt-2">Seats: {{ car.passengers }}</p>
+    <p class="text-gray-600 mt-2">Transmission: {{ car.transmission }}</p>
+    <p class="text-gray-600 mt-2">Features: {{ car.features }}</p>
+    <p class="text-gray-600 mt-2">Passengers: {{ car.passengers }}</p>
+
+    <a href="{% url 'book_car' car.id %}"
+       class="mt-5 inline-block bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700">
+       Book Now
+    </a>
+
+</div>
+
+</body>
+</html>
